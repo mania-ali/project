@@ -2,28 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import Login from './components/Login';
-import Home from './components/Home'; // We'll create this next
-
-// Add authentication token to axios requests
-axios.interceptors.request.use(
-  config => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-    }
-    return config;
-  },
-  error => {
-    return Promise.reject(error);
-  }
-);
+import Home from './components/Home';
+import MovieDetails from './components/MovieDetails';
+import Showtimes from './components/Showtimes';
+import ShowtimeDetails from './components/ShowtimeDetails';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is already logged in
     const token = localStorage.getItem('token');
     if (token) {
       setIsAuthenticated(true);
@@ -44,7 +32,19 @@ function App() {
         />
         <Route 
           path="/" 
-          element={isAuthenticated ? <Home setIsAuthenticated={setIsAuthenticated} /> : <Navigate to="/login" />} 
+          element={isAuthenticated ? <Home setIsAuthenticated={setIsAuthenticated} /> : <Navigate to="/Login" />} 
+        />
+        <Route 
+          path="/movie/:id" 
+          element={isAuthenticated ? <MovieDetails /> : <Navigate to="/Login" />} 
+        />
+        <Route 
+          path="/showtimes/:movieId" 
+          element={isAuthenticated ? <Showtimes /> : <Navigate to="/Login" />} 
+        />
+        <Route 
+          path="/showtime/:showtimeId" 
+          element={isAuthenticated ? <ShowtimeDetails /> : <Navigate to="/Login" />} 
         />
       </Routes>
     </Router>

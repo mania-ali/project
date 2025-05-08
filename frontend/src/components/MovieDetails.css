@@ -1,0 +1,48 @@
+.movie-details {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    background-color: #ae1f45;
+  }
+  
+  .movie-details h2 {
+    margin-bottom: 10px;
+    font-size: 24px;
+    color: #220117;
+  }
+  
+  .movie-details p {
+    margin: 6px 0;
+    font-size: 16px;
+    color: #530303;
+  }
+  
+  .back-button {
+    margin-bottom: 15px;
+    padding: 6px 12px;
+    border: none;
+    background-color: #c81d62;
+    color: rgb(54, 2, 11);
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .back-button:hover {
+    background-color: #a9e71a;
+  }
+  
+  .showtimes-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  .showtimes-button:hover {
+    background-color: #0056b3;
+  }

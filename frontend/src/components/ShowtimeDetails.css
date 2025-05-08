@@ -1,0 +1,12 @@
+.showtime-details {
+    padding: 20px;
+  }
+  .back-button {
+    margin-bottom: 10px;
+    background: none;
+    border: none;
+    color: #007bff;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
