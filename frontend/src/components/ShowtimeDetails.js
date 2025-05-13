@@ -62,9 +62,10 @@ const ShowtimeDetails = () => {
         <p><strong>Theater:</strong> {showtimeDetails.theater_name}</p>
         <p><strong>Date:</strong> {formattedDate}</p>
         <p><strong>Time:</strong> {formattedTime}</p>
-        <button className="book-button" onClick={() => navigate(`/booking/${showtimeId}`)}>
-          Book Seats
-        </button>
+
+        <button className="book-button" onClick={() => navigate(`/showtime/${showtimeId}/seats`)}>
+  View Available Seats
+</button>
       </div>
     </div>
   );

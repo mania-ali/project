@@ -43,16 +43,18 @@ const SeatSelection = () => {
       <div className="seat-grid">
         {seats.map(seat => (
           <button 
-            key={seat.seat_id}
+            key={seat.seat_id} 
             className={selectedSeats.includes(seat.seat_id) ? 'selected' : ''}
-            onClick={() => handleSeatSelect(seat.seat_id)}
+            onClick={() => handleSeatSelect(seat.seat_id)} 
             disabled={!seat.is_available}
           >
             {seat.seat_number}
           </button>
         ))}
       </div>
-      <button onClick={handleBooking} disabled={selectedSeats.length === 0}>Book Selected Seats</button>
+      <button onClick={handleBooking} disabled={selectedSeats.length === 0}>
+        Book Selected Seats
+      </button>
     </div>
   );
 };

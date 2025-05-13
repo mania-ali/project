@@ -1,0 +1,36 @@
+.book-tickets {
+    padding: 20px;
+    max-width: 800px;
+    margin: auto;
+    text-align: center;
+  }
+  
+  .seats-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 10px;
+    margin: 20px 0;
+  }
+  
+  .seat {
+    padding: 10px;
+    background-color: #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .seat.booked {
+    background-color: #f44336;
+    cursor: not-allowed;
+    color: white;
+  }
+  
+  .seat.selected {
+    background-color: #4caf50;
+    color: white;
+  }
+  
+  .booking-summary {
+    margin-top: 20px;
+  }
+  
