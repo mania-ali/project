@@ -43,4 +43,4 @@ const Showtimes = () => {
   );
 };
 
-export default Showtimes;
+export default Showtimes; 

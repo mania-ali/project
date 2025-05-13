@@ -9,4 +9,22 @@
     font-size: 16px;
     cursor: pointer;
   }
+  .button-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.layout-button {
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.layout-button:hover {
+  background-color: #0b7dda;
+}
   

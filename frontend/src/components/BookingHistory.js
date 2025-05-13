@@ -17,7 +17,7 @@ const BookingHistory = () => {
         setBookings(response.data);
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching booking history:', err);
+        console.error('Error while fetching booking history:', err);
         setError(`Failed to load booking history: ${err.response?.data?.error || err.message}`);
         setLoading(false);
       }

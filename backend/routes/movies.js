@@ -202,9 +202,13 @@ router.get('/booking/:bookingId', async (req, res) => {
 
 
 
+// Get booking history for a specific user
 router.get('/user/:userId/bookings', async (req, res) => {
   try {
     const { userId } = req.params;
+
+    console.log('✅ ROUTE HIT: /user/:userId/bookings');
+    console.log('User ID:', userId);
 
     if (!userId || isNaN(parseInt(userId))) {
       return res.status(400).json({ error: 'Invalid user ID' });
@@ -214,18 +218,80 @@ router.get('/user/:userId/bookings', async (req, res) => {
 
     const result = await db.pool.request()
       .input('user_id', db.sql.Int, parseInt(userId))
-      .execute('Get_Booking_History');
+      .execute('Get_Booking_History');  // Make sure this SP exists in DB
 
+    if (result.recordset.length === 0) {
+      return res.status(404).json({ message: 'No bookings found for this user' });
+    }
+
+    console.log(`Fetched ${result.recordset.length} bookings for user ${userId}`);
     res.json(result.recordset);
+
   } catch (err) {
     console.error('Error fetching booking history:', err);
     res.status(500).json({ error: err.message });
   }
 });
 
+router.delete('/booking/:bookingId/cancel', async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const user = JSON.parse(req.headers.user || '{}');
 
+    if (!bookingId || isNaN(parseInt(bookingId))) {
+      return res.status(400).json({ 
+        status: 'error',
+        message: 'Invalid booking ID' 
+      });
+    }
 
+    await db.poolConnect;
+    
+    // Execute cancellation
+    const result = await db.pool.request()
+      .input('BookingID', db.sql.Int, parseInt(bookingId))
+      .execute('Cancel_Ticket');
 
+    const response = result.recordset[0];
+    
+    if (response.status === 'error') {
+      return res.status(400).json({
+        status: 'error',
+        message: response.message
+      });
+    }
+
+    // Get updated booking history
+    const historyResult = await db.pool.request()
+      .input('user_id', db.sql.Int, user.user_id)
+      .execute('Get_Booking_History');
+
+    res.status(200).json({
+      status: 'success',
+      message: response.message,
+      updatedHistory: historyResult.recordset,
+      showtimeId: response.showtime_id,
+      seatsFreed: response.seats_freed
+    });
+
+  } catch (err) {
+    console.error('Error cancelling ticket:', err);
+    
+    // Check if error came from stored procedure
+    if (err.originalError?.info?.message) {
+      return res.status(400).json({
+        status: 'error',
+        message: err.originalError.info.message
+      });
+    }
+    
+    res.status(500).json({ 
+      status: 'error',
+      message: 'Failed to cancel ticket. Please try again.',
+      details: err.message 
+    });
+  }
+});
 
 ///////////////////////////////////////////////
 // Movie routes

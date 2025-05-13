@@ -24,6 +24,10 @@ function Home({ setIsAuthenticated }) {
     fetchMovies();
   }, []);
 
+
+
+  
+
   if (loading) {
     return <div className="loading">Loading movies...</div>;
   }

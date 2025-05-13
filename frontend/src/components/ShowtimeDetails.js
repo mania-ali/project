@@ -71,4 +71,4 @@ const ShowtimeDetails = () => {
   );
 };
 
-export default ShowtimeDetails;
+export default ShowtimeDetails; 

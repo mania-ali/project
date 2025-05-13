@@ -1,176 +1,192 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 const BookingConfirmation = () => {
   const [confirmation, setConfirmation] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [showHistory, setShowHistory] = useState(false);
+  const [cancelStatus, setCancelStatus] = useState(null);
+  const [isCancelling, setIsCancelling] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Get confirmation data from localStorage
-    const confirmationData = localStorage.getItem('bookingConfirmation');
-    
-    if (confirmationData) {
-      setConfirmation(JSON.parse(confirmationData));
-    } else {
-      // No confirmation data found, redirect to homepage
-      navigate('/');
+    const booking = JSON.parse(localStorage.getItem('bookingConfirmation'));
+    if (booking) {
+      setConfirmation(booking);
     }
-  }, [navigate]);
+  }, []);
 
-  const viewBookingHistory = () => {
-    // Get user from localStorage
-    const user = JSON.parse(localStorage.getItem('user')) || { user_id: 1 };
-    navigate(`/booking-history/${user.user_id}`);
+  const fetchBookingHistory = async () => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const response = await axios.get(`http://localhost:5000/api/movies/user/${user.user_id}/bookings`);
+      setHistory(response.data);
+      setShowHistory(true);
+    } catch (error) {
+      console.error('Error fetching booking history:', error);
+    }
+  };
+
+  const handleCancelTicket = async () => {
+    if (!confirmation?.bookingId) return;
+    
+    if (!window.confirm('Are you sure you want to cancel this booking?')) {
+      return;
+    }
+    
+    setIsCancelling(true);
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const response = await axios.delete(
+        `http://localhost:5000/api/movies/booking/${confirmation.bookingId}/cancel`,
+        { headers: { user: JSON.stringify(user) } }
+      );
+      
+      if (response.data.status === 'error') {
+        setCancelStatus({
+          success: false,
+          message: response.data.message
+        });
+        return;
+      }
+      
+      setCancelStatus({
+        success: true,
+        message: response.data.message
+      });
+      
+      // Update with server's fresh history data
+      setHistory(response.data.updatedHistory);
+      localStorage.removeItem('bookingConfirmation');
+      setConfirmation(null);
+      
+    } catch (error) {
+      setCancelStatus({
+        success: false,
+        message: error.response?.data?.message || 'Failed to cancel ticket'
+      });
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
+  const onReturnHome = () => {
+    navigate('/');
+  };
+
+  // Helper function to format the date and time
+  const formatShowtime = (dateString, timeString) => {
+    try {
+      // Handle cases where timeString might be in different formats
+      let formattedTime = timeString;
+      if (timeString.includes('1970-01-01')) {
+        formattedTime = timeString.split('T')[1]?.split('.')[0] || '00:00';
+      }
+      
+      const date = new Date(dateString);
+      const timeParts = formattedTime.split(':');
+      const time = new Date();
+      time.setHours(parseInt(timeParts[0]) || 0);
+      time.setMinutes(parseInt(timeParts[1]) || 0);
+      
+      return {
+        date: date.toLocaleDateString(),
+        time: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+    } catch (error) {
+      console.error('Error formatting date/time:', error);
+      return {
+        date: dateString,
+        time: timeString
+      };
+    }
   };
 
   if (!confirmation) {
-    return <div>Loading confirmation...</div>;
+    return (
+      <div style={{ maxWidth: '600px', margin: 'auto', padding: '20px' }}>
+        <h2>Booking Cancelled</h2>
+        {cancelStatus?.success && (
+          <div style={{
+            padding: '10px',
+            margin: '10px 0',
+            backgroundColor: '#d4edda',
+            color: '#155724',
+            borderRadius: '4px'
+          }}>
+            {cancelStatus.message}
+          </div>
+        )}
+        <button onClick={onReturnHome}>Return to Homepage</button>
+      </div>
+    );
   }
 
   return (
-    <div className="confirmation-page">
-      <div className="confirmation-card">
-        <div className="ticket-header">
-          <h1>Booking Confirmation</h1>
-          <div className="confirmation-number">
-            <span>Booking ID: {confirmation.bookingId}</span>
-          </div>
-        </div>
+    <div style={{ maxWidth: '600px', margin: 'auto', padding: '20px' }}>
+      <h2>🎟 Booking Confirmed!</h2>
+      <p>Your booking ID is: <strong>{confirmation.bookingId}</strong></p>
 
-        <div className="ticket-details">
-          <h2>{confirmation.confirmation.movie_title}</h2>
-          <div className="detail-row">
-            <div className="detail-item">
-              <span className="label">Theater</span>
-              <span className="value">{confirmation.confirmation.theater_name}</span>
-            </div>
-            <div className="detail-item">
-              <span className="label">Date</span>
-              <span className="value">{new Date(confirmation.confirmation.show_date).toLocaleDateString()}</span>
-            </div>
-          </div>
-          <div className="detail-row">
-            <div className="detail-item">
-              <span className="label">Time</span>
-              <span className="value">{confirmation.confirmation.show_time}</span>
-            </div>
-            <div className="detail-item">
-              <span className="label">Customer</span>
-              <span className="value">{confirmation.confirmation.customer_name}</span>
-            </div>
-          </div>
-          <div className="detail-row">
-            <div className="detail-item">
-              <span className="label">Total Price</span>
-              <span className="value">${parseFloat(confirmation.confirmation.total_price).toFixed(2)}</span>
-            </div>
-          </div>
+      {cancelStatus && (
+        <div style={{
+          padding: '10px',
+          margin: '10px 0',
+          backgroundColor: cancelStatus.success ? '#d4edda' : '#f8d7da',
+          color: cancelStatus.success ? '#155724' : '#721c24',
+          borderRadius: '4px'
+        }}>
+          {cancelStatus.message}
         </div>
+      )}
 
-        <div className="ticket-footer">
-          <p>Thank you for your booking!</p>
-          <p>Please arrive 15 minutes before showtime.</p>
-          <div className="button-group">
-            <button className="home-button" onClick={() => navigate('/')}>Return to Homepage</button>
-            <button className="history-button" onClick={viewBookingHistory}>View Booking History</button>
-          </div>
-        </div>
+      <div style={{ display: 'flex', gap: '10px', margin: '20px 0', flexWrap: 'wrap' }}>
+        <button onClick={onReturnHome}>Return to Homepage</button>
+        <button onClick={fetchBookingHistory}>
+          {showHistory ? 'Hide History' : 'View Booking History'}
+        </button>
+        <button 
+          onClick={handleCancelTicket} 
+          disabled={isCancelling}
+          style={{ 
+            backgroundColor: '#dc3545', 
+            color: 'white',
+            opacity: isCancelling ? 0.7 : 1
+          }}
+        >
+          {isCancelling ? 'Cancelling...' : 'Cancel Ticket'}
+        </button>
       </div>
 
-      <style jsx>{`
-        .confirmation-page {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          min-height: 100vh;
-          background-color: #f0f0f0;
-          padding: 20px;
-        }
-        
-        .confirmation-card {
-          background-color: white;
-          border-radius: 10px;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-          width: 100%;
-          max-width: 600px;
-          overflow: hidden;
-        }
-        
-        .ticket-header {
-          background-color: #4CAF50;
-          color: white;
-          padding: 20px;
-          text-align: center;
-        }
-        
-        .confirmation-number {
-          background-color: rgba(0, 0, 0, 0.1);
-          border-radius: 5px;
-          padding: 5px 10px;
-          display: inline-block;
-          margin-top: 10px;
-        }
-        
-        .ticket-details {
-          padding: 20px;
-        }
-        
-        .detail-row {
-          display: flex;
-          margin-bottom: 15px;
-        }
-        
-        .detail-item {
-          flex: 1;
-        }
-        
-        .label {
-          display: block;
-          color: #666;
-          font-size: 0.9em;
-          margin-bottom: 5px;
-        }
-        
-        .value {
-          font-weight: bold;
-          font-size: 1.1em;
-        }
-        
-        .ticket-footer {
-          border-top: 1px dashed #ddd;
-          padding: 20px;
-          text-align: center;
-        }
-        
-        .button-group {
-          display: flex;
-          justify-content: center;
-          gap: 15px;
-          margin-top: 15px;
-        }
-        
-        .home-button, .history-button {
-          background-color: #4CAF50;
-          color: white;
-          border: none;
-          padding: 10px 20px;
-          border-radius: 5px;
-          cursor: pointer;
-          font-size: 16px;
-        }
-        
-        .history-button {
-          background-color: #2196F3;
-        }
-        
-        .home-button:hover {
-          background-color: #45a049;
-        }
-        
-        .history-button:hover {
-          background-color: #0b7dda;
-        }
-      `}</style>
+      {showHistory && (
+        <div style={{ marginTop: '20px' }}>
+          <h3>📜 Your Booking History:</h3>
+          {history.length > 0 ? (
+            <ul style={{ listStyle: 'none', padding: 0 }}>
+              {history.map((booking) => {
+                const { date, time } = formatShowtime(booking.show_date, booking.show_time);
+                return (
+                  <li 
+                    key={booking.booking_id} 
+                    style={{ 
+                      padding: '10px',
+                      margin: '5px 0',
+                      backgroundColor: '#f8f9fa',
+                      borderRadius: '4px',
+                      borderLeft: booking.booking_id === confirmation.bookingId ? '4px solid #28a745' : 'none'
+                    }}
+                  >
+                    {booking.movie_title} at {booking.theater_name} on {date} at {time} | 
+                    Seat: {booking.seat_id} | Price: ${booking.total_price}
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p>No past bookings found.</p>
+          )}
+        </div>
+      )}
     </div>
   );
 };

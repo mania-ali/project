@@ -45,6 +45,7 @@ function App() {
           path="/showtime/:showtimeId" 
           element={isAuthenticated ? <ShowtimeDetails /> : <Navigate to="/Login" />} 
         />
+        
         <Route 
           path="/showtime/:showtimeId/seats" 
           element={isAuthenticated ? <AvailableSeats /> : <Navigate to="/Login" />} 
