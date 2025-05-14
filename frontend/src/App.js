@@ -7,17 +7,27 @@ import ShowtimeDetails from './components/ShowtimeDetails';
 import AvailableSeats from './components/AvailableSeats';
 import BookTickets from './components/BookTickets';
 import BookingConfirmation from './components/BookingConfirmation';
-import BookingHistory from './components/BookingHistory'; // ✅ New import
-import Login from './components/Login'; // ✅ Import Login
+import BookingHistory from './components/BookingHistory';
+import Login from './components/Login';
+import AdminDashboard from './components/AdminDashboard'; // Import AdminDashboard
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userType, setUserType] = useState(null); // 'user' or 'admin'
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    const admin = localStorage.getItem('admin');
+
     if (token) {
       setIsAuthenticated(true);
+      if (user) {
+        setUserType('user');
+      } else if (admin) {
+        setUserType('admin');
+      }
     }
     setLoading(false);
   }, []);
@@ -29,43 +39,95 @@ function App() {
   return (
     <Router>
       <Routes>
-      <Route 
-          path="/Login" 
-          element={<Login setIsAuthenticated={setIsAuthenticated} />} 
+        <Route 
+          path="/login" 
+          element={
+            isAuthenticated ? 
+              (userType === 'admin' ? 
+                <Navigate to="/admin-dashboard" /> : 
+                <Navigate to="/" />) : 
+              <Login setIsAuthenticated={setIsAuthenticated} setUserType={setUserType} />
+          } 
         />
+        
+        {/* User Routes */}
         <Route 
           path="/" 
-          element={isAuthenticated ? <Home setIsAuthenticated={setIsAuthenticated} /> : <Navigate to="/Login" />} 
+          element={
+            isAuthenticated && userType === 'user' ? 
+              <Home setIsAuthenticated={setIsAuthenticated} /> : 
+              <Navigate to="/login" />
+          } 
         />
         <Route 
           path="/movie/:id" 
-          element={isAuthenticated ? <MovieDetails /> : <Navigate to="/Login" />} 
+          element={
+            isAuthenticated && userType === 'user' ? 
+              <MovieDetails /> : 
+              <Navigate to="/login" />
+          } 
         />
         <Route 
           path="/showtimes/:movieId" 
-          element={isAuthenticated ? <Showtimes /> : <Navigate to="/Login" />} 
+          element={
+            isAuthenticated && userType === 'user' ? 
+              <Showtimes /> : 
+              <Navigate to="/login" />
+          } 
         />
         <Route 
           path="/showtime/:showtimeId" 
-          element={isAuthenticated ? <ShowtimeDetails /> : <Navigate to="/Login" />} 
+          element={
+            isAuthenticated && userType === 'user' ? 
+              <ShowtimeDetails /> : 
+              <Navigate to="/login" />
+          } 
         />
-        
         <Route 
           path="/showtime/:showtimeId/seats" 
-          element={isAuthenticated ? <AvailableSeats /> : <Navigate to="/Login" />} 
+          element={
+            isAuthenticated && userType === 'user' ? 
+              <AvailableSeats /> : 
+              <Navigate to="/login" />
+          } 
         />
         <Route 
           path="/book/:showtimeId" 
-          element={isAuthenticated ? <BookTickets /> : <Navigate to="/Login" />} 
+          element={
+            isAuthenticated && userType === 'user' ? 
+              <BookTickets /> : 
+              <Navigate to="/login" />
+          } 
         />
         <Route 
           path="/confirmation" 
-          element={isAuthenticated ? <BookingConfirmation /> : <Navigate to="/Login" />} 
+          element={
+            isAuthenticated && userType === 'user' ? 
+              <BookingConfirmation /> : 
+              <Navigate to="/login" />
+          } 
         />
         <Route 
           path="/user/:userId/bookings" 
-          element={isAuthenticated ? <BookingHistory /> : <Navigate to="/Login" />} 
-        /> {/* ✅ Added BookingHistory route */}
+          element={
+            isAuthenticated && userType === 'user' ? 
+              <BookingHistory /> : 
+              <Navigate to="/login" />
+          } 
+        />
+
+        {/* Admin Routes */}
+        <Route 
+  path="/admin-dashboard" 
+  element={
+    isAuthenticated && userType === 'admin' ? 
+      <AdminDashboard setIsAuthenticated={setIsAuthenticated} /> : 
+      <Navigate to="/login" />
+  } 
+/>
+        
+        {/* Default redirect */}
+        <Route path="*" element={<Navigate to={isAuthenticated ? (userType === 'admin' ? "/admin-dashboard" : "/") : "/login"} />} />
       </Routes>
     </Router>
   );

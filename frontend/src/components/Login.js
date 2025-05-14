@@ -1,70 +1,116 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import './Login.css'; // We'll create this next
+import './Login.css';
 
-const Login = ({ setIsAuthenticated }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+const Login = ({ setIsAuthenticated, setUserType }) => {
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  // User login state
+  const [userEmail, setUserEmail] = useState('');
+  const [userPassword, setUserPassword] = useState('');
+  const [userError, setUserError] = useState('');
+
+  // Admin login state
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [adminError, setAdminError] = useState('');
+
+  const handleUserLogin = async (e) => {
     e.preventDefault();
-    setError('');
-    
+    setUserError('');
+
     try {
       const response = await axios.post('http://localhost:5000/api/auth/login', {
-        email,
-        password
+        email: userEmail,
+        password: userPassword
       });
-      
-      // Store token and user info in localStorage
+
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
-      
-      // Update authentication state
       setIsAuthenticated(true);
-      
-      // Redirect to home page
+      setUserType('user');
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      setUserError(err.response?.data?.message || 'Login failed. Please try again.');
+    }
+  };
+
+  const handleAdminLogin = async (e) => {
+    e.preventDefault();
+    setAdminError('');
+
+    try {
+      const response = await axios.post('http://localhost:5000/api/admin/login', {
+        email: adminEmail,
+        password: adminPassword
+      });
+
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('admin', JSON.stringify(response.data.admin));
+      setIsAuthenticated(true);
+      setUserType('admin');
+      navigate('/admin-dashboard');
+    } catch (err) {
+      setAdminError(err.response?.data?.message || 'Admin login failed.');
     }
   };
 
   return (
-    <div className="login-container">
-      <div className="login-form-container">
-        <h1 className="login-title">Movie Ticket Booking System</h1>
-        <form onSubmit={handleSubmit} className="login-form">
-          {error && <div className="error-message">{error}</div>}
-          
+    <div className="login-page-container">
+      <div className="login-form-box user-login">
+        <h2>User Login</h2>
+        <form onSubmit={handleUserLogin}>
+          {userError && <div className="error-message">{userError}</div>}
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label>Email</label>
             <input
               type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={userEmail}
+              onChange={(e) => setUserEmail(e.target.value)}
               required
-              placeholder="Enter your email"
+              placeholder="User email"
             />
           </div>
-          
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label>Password</label>
             <input
               type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={userPassword}
+              onChange={(e) => setUserPassword(e.target.value)}
               required
-              placeholder="Enter your password"
+              placeholder="User password"
             />
           </div>
-          
-          <button type="submit" className="login-button">Login</button>
+          <button type="submit" className="login-button">Login as User</button>
+        </form>
+      </div>
+
+      <div className="login-form-box admin-login">
+        <h2>Admin Login</h2>
+        <form onSubmit={handleAdminLogin}>
+          {adminError && <div className="error-message">{adminError}</div>}
+          <div className="form-group">
+            <label>Email</label>
+            <input
+              type="email"
+              value={adminEmail}
+              onChange={(e) => setAdminEmail(e.target.value)}
+              required
+              placeholder="Admin email"
+            />
+          </div>
+          <div className="form-group">
+            <label>Password</label>
+            <input
+              type="password"
+              value={adminPassword}
+              onChange={(e) => setAdminPassword(e.target.value)}
+              required
+              placeholder="Admin password"
+            />
+          </div>
+          <button type="submit" className="login-button">Login as Admin</button>
         </form>
       </div>
     </div>
