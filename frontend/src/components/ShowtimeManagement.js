@@ -10,6 +10,17 @@ const ShowtimeManagement = () => {
     ShowTime: ''
   });
 
+// Helper function to convert 12-hour to 24-hour format
+const convertTo24Hour = (time12h) => {
+    const [time, modifier] = time12h.split(' ');
+    let [hours, minutes] = time.split(':');
+    
+    if (hours === '12') hours = '00';
+    if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
+    
+    return `${hours}:${minutes}:00`;
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setShowtimeData(prev => ({ ...prev, [name]: value }));
@@ -17,14 +28,34 @@ const ShowtimeManagement = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:5000/api/admin/showtimes', showtimeData, {
+  try {
+    // Format time to HH:MM:SS
+    let formattedTime = showtimeData.ShowTime;
+    if (formattedTime && !formattedTime.includes(':')) {
+      formattedTime = `${formattedTime}:00`; // Add seconds if missing
+    }
+    // Ensure 24-hour format
+    if (formattedTime.includes('AM') || formattedTime.includes('PM')) {
+      formattedTime = convertTo24Hour(formattedTime);
+    }
+
+    const formattedData = {
+      ...showtimeData,
+      ShowTime: formattedTime
+    };
+
+    const token = localStorage.getItem('token');
+    const response = await axios.post(
+      'http://localhost:5000/api/adminActions/showtimes',
+      formattedData,
+      {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
-      });
+        
+      }
+    );
       alert(response.data.message || 'Showtime saved successfully');
       setShowtimeData({
         ShowtimeID: '',
@@ -34,10 +65,13 @@ const ShowtimeManagement = () => {
         ShowTime: ''
       });
     } catch (error) {
-      console.error('Error:', error);
-      alert(`Error: ${error.response?.data?.error || 'Failed to save showtime'}`);
-    }
+        console.error('Error:', error);
+        alert(`Error: ${error.response?.data?.error || error.message || 'Failed to perform operation'}`);
+        console.log('Full error response:', error.response);
+      }
+      
   };
+  
   return (
     <div className="showtime-management">
       <h2>Manage Showtimes</h2>
@@ -59,13 +93,22 @@ const ShowtimeManagement = () => {
           <input type="date" name="ShowDate" value={showtimeData.ShowDate} onChange={handleChange} required />
         </div>
         <div>
-          <label>Show Time:</label>
-          <input type="time" name="ShowTime" value={showtimeData.ShowTime} onChange={handleChange} required />
-        </div>
+  <label>Show Time (24-hour format):</label>
+  <input
+    type="time"
+    name="ShowTime"
+    value={showtimeData.ShowTime}
+    onChange={handleChange}
+    step="1" // Allows seconds
+    required
+  />
+</div>
         <button type="submit">Submit</button>
       </form>
     </div>
   );
+
+  
 };
 
 export default ShowtimeManagement;

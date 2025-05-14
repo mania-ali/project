@@ -21,7 +21,7 @@ const MovieManagement = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:5000/api/admin/movies', movieData, {
+      const response = await axios.post('http://localhost:5000/api/adminActions/movies', movieData, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -38,9 +38,10 @@ const MovieManagement = () => {
         Cast: ''
       });
     } catch (error) {
-      console.error('Error:', error);
-      alert(`Error: ${error.response?.data?.error || 'Failed to save movie'}`);
-    }
+        console.error('Error:', error);
+        alert(`Error: ${error.response?.data?.error || error.message || 'Failed to perform operation'}`);
+        console.log('Full error response:', error.response);
+      }
   };
 
   return (

@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const SeatManagement = () => {
   const [seatData, setSeatData] = useState({
-    SeatID: '',
+    SeatID: '', // Now required (no NULL allowed)
     TheaterID: '',
     SeatNumber: '',
     Action: 'ADD'
@@ -18,22 +18,35 @@ const SeatManagement = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:5000/api/admin/seats', seatData, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+      
+      // Validate SeatID is provided (even for ADD)
+      if (!seatData.SeatID) {
+        throw new Error("Seat ID is required for all operations");
+      }
+
+      const response = await axios.post(
+        'http://localhost:5000/api/adminActions/seats',
+        seatData, // No longer converting SeatID to NULL
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
         }
-      });
+      );
+
       alert(response.data.message || 'Seat operation successful');
+      
+      // Reset form (but keep Action selection)
       setSeatData({
         SeatID: '',
         TheaterID: '',
         SeatNumber: '',
-        Action: 'ADD'
+        Action: seatData.Action // Keep the current action
       });
     } catch (error) {
       console.error('Error:', error);
-      alert(`Error: ${error.response?.data?.error || 'Failed to perform seat operation'}`);
+      alert(`Error: ${error.response?.data?.error || error.message || 'Failed to perform operation'}`);
     }
   };
 
@@ -42,20 +55,42 @@ const SeatManagement = () => {
       <h2>Manage Seats</h2>
       <form onSubmit={handleSubmit}>
         <div>
-          <label>Seat ID (leave empty for new seat):</label>
-          <input type="number" name="SeatID" value={seatData.SeatID} onChange={handleChange} />
+          <label>Seat ID (required):</label> {/* Updated label */}
+          <input 
+            type="number" 
+            name="SeatID" 
+            value={seatData.SeatID} 
+            onChange={handleChange} 
+            required // Makes field mandatory
+          />
         </div>
         <div>
           <label>Theater ID:</label>
-          <input type="number" name="TheaterID" value={seatData.TheaterID} onChange={handleChange} required />
+          <input 
+            type="number" 
+            name="TheaterID" 
+            value={seatData.TheaterID} 
+            onChange={handleChange} 
+            required 
+          />
         </div>
         <div>
           <label>Seat Number:</label>
-          <input type="text" name="SeatNumber" value={seatData.SeatNumber} onChange={handleChange} required />
+          <input 
+            type="text" 
+            name="SeatNumber" 
+            value={seatData.SeatNumber} 
+            onChange={handleChange} 
+            required 
+          />
         </div>
         <div>
           <label>Action:</label>
-          <select name="Action" value={seatData.Action} onChange={handleChange}>
+          <select 
+            name="Action" 
+            value={seatData.Action} 
+            onChange={handleChange}
+          >
             <option value="ADD">Add Seat</option>
             <option value="REMOVE">Remove Seat</option>
           </select>
