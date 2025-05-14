@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 function Home({ setIsAuthenticated }) {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Fetch movies from backend
@@ -24,9 +25,12 @@ function Home({ setIsAuthenticated }) {
     fetchMovies();
   }, []);
 
-
-
-  
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setIsAuthenticated(false);
+    navigate('/Login');
+  };
 
   if (loading) {
     return <div className="loading">Loading movies...</div>;
@@ -40,6 +44,8 @@ function Home({ setIsAuthenticated }) {
     <div className="home-container">
       <header className="app-header">
         <h1>Movie Ticket Booking System</h1>
+        {/* ✅ Logout Button */}
+        <button onClick={handleLogout} className="logout-btn">Logout</button>
       </header>
 
       <main className="main-content">

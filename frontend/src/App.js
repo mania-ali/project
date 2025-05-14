@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-
 import Home from './components/Home';
 import MovieDetails from './components/MovieDetails';
 import Showtimes from './components/Showtimes';
@@ -9,6 +8,7 @@ import AvailableSeats from './components/AvailableSeats';
 import BookTickets from './components/BookTickets';
 import BookingConfirmation from './components/BookingConfirmation';
 import BookingHistory from './components/BookingHistory'; // ✅ New import
+import Login from './components/Login'; // ✅ Import Login
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -29,6 +29,10 @@ function App() {
   return (
     <Router>
       <Routes>
+      <Route 
+          path="/Login" 
+          element={<Login setIsAuthenticated={setIsAuthenticated} />} 
+        />
         <Route 
           path="/" 
           element={isAuthenticated ? <Home setIsAuthenticated={setIsAuthenticated} /> : <Navigate to="/Login" />} 

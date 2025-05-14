@@ -36,7 +36,7 @@ const Login = ({ setIsAuthenticated }) => {
   return (
     <div className="login-container">
       <div className="login-form-container">
-        <h2>Movie Ticket Booking System</h2>
+        <h1 className="login-title">Movie Ticket Booking System</h1>
         <form onSubmit={handleSubmit} className="login-form">
           {error && <div className="error-message">{error}</div>}
           

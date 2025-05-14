@@ -46,3 +46,12 @@
   .showtimes-button:hover {
     background-color: #0056b3;
   }
+  .movie-poster {
+  width: 250px;
+  height: auto;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}

@@ -3,7 +3,7 @@ const app = express();
 const cors = require('cors'); // You'll need to install this: npm install cors
 const dotenv = require('dotenv');
 const userRoutes = require('./routes/users');
-//const authRoutes = require('./routes/auth'); // New import for auth routes
+const authRoutes = require('./routes/auth'); // New import for auth routes
 const moviesRoutes = require('./routes/movies'); // We'll create this
 
 dotenv.config();
@@ -14,7 +14,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/users', userRoutes);
-//app.use('/api/auth', authRoutes); // Add auth routes
+app.use('/api/auth', authRoutes); // Add auth routes
 // We'll also need routes for movies
 app.use('/api/movies', moviesRoutes);
 
